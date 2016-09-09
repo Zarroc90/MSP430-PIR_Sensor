@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS
+CG_TOOL_ROOT := D:/Software/TI/ccsv6/tools/compiler/msp430_15.12.3.LTS
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -139,13 +139,13 @@ all: PIR_Sensor.out
 PIR_Sensor.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power="all" -g --define=__MSP430F2013__ --diag_warning=225 --diag_wrap=off --display_error_number --printf_support=minimal -z -m"PIR_Sensor.map" --stack_size=50 --heap_size=0 -i"C:/ti/ccsv6/ccs_base/msp430/include" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/lib" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="PIR_Sensor_linkInfo.xml" --use_hw_mpy=none --rom_model -o "PIR_Sensor.out" $(ORDERED_OBJS)
+	"D:/Software/TI/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power="all" -g --define=__MSP430F2013__ --diag_warning=225 --diag_wrap=off --display_error_number --printf_support=minimal -z -m"PIR_Sensor.map" --stack_size=50 --heap_size=0 -i"D:/Software/TI/ccsv6/ccs_base/msp430/include" -i"D:/Software/TI/ccsv6/tools/compiler/msp430_15.12.3.LTS/lib" -i"D:/Software/TI/ccsv6/tools/compiler/msp430_15.12.3.LTS/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="PIR_Sensor_linkInfo.xml" --use_hw_mpy=none --rom_model -o "PIR_Sensor.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 PIR_Sensor.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "PIR_Sensor.hex" $(EXE_OUTPUTS__QUOTED)
+	"D:/Software/TI/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "PIR_Sensor.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 

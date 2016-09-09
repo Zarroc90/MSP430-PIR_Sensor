@@ -84,13 +84,13 @@ void main(void)
   BCSCTL1 |= DIVA_2;                        // ACLK = VLO/4
   BCSCTL3 |= LFXT1S_2;
 
-  P1OUT = 0x10;                             // P1OUTs
+  P1OUT = 0x30;        		        	    // P1OUTs 1.4/1.5
   P1SEL = 0x08;                             // Select VREF function
-  P1DIR = 0xEF;                             // Unused pins as outputs
-  P1REN |= 0x10;                            // P1.4 pullup
-  P1IE |= 0x10;                             // P1.4 interrupt enabled
-  P1IES |= 0x10;                            // P1.4 Hi/lo edge
-  P1IFG &= ~0x10;                           // P1.4 IFG cleared
+  P1DIR = 0xCF;                             // Unused pins as outputs
+  P1REN |= 0x30;		                    // P1.4/1.5 pullup
+  P1IE |= 0x30;                             // P1.4 interrupt enabled
+  P1IES |= 0x30;                            // P1.4 Hi/lo edge
+  P1IFG &= ~0x30;                           // P1.4 IFG cleared
   P2OUT = 0x00 + SENSOR_PWR;                // P2OUTs
   P2SEL &= ~SENSOR_PWR;                     // P2.7 = GPIO
   P2DIR = 0xff;                             // Unused pins as outputs
@@ -159,6 +159,12 @@ __interrupt void watchdog_timer(void)
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
-  LED_ENABLE ^= 0x01;                      // Toggle LED enable for current measurement
-  P1IFG &= ~0x10;                          // P1.4 IFG cleared
+
+	if ((P1IFG&0x10)==0x10) {
+		LED_ENABLE ^= 0x01;                      // Toggle LED enable for current measurement
+		P1IFG &= ~0x10;							// P1.4 IFG cleared
+	}
+	else{
+		P1IFG &= ~0x20;							// P1.5 IFG cleared
+	}
 }
