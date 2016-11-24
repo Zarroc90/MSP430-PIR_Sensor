@@ -69,11 +69,14 @@
 //******************************************************************************
 #include  <msp430x20x3.h>
 
-#define   LED_OUT         BIT0              // Bit location for LED
-#define   SENSOR_PWR      BIT7              // Bit location for power to sensor
-#define   THRESHOLD       50                // Threshold for motion
+#define   	LED_OUT         BIT0              	// Bit location for LED
+#define		SCLK			BIT5				// Bit Location for SCLK
+#define		PIR				BIT6				// Bit Location for PIR
+#define   	SENSOR_PWR      BIT7              	// Bit location for power to sensor
+#define   	THRESHOLD       50                	// Threshold for motion
 
 static unsigned int result_old = 0;         // Storage for last conversion
+static unsigned int motion=0;				// Variable for Motion status (no-motion =0,motion =1)
 char LED_ENABLE = 1;                        // LED control
 
 void main(void)
@@ -86,13 +89,14 @@ void main(void)
 
   P1OUT = 0x30;        		        	    // P1OUTs 1.4/1.5
   P1SEL = 0x08;                             // Select VREF function
-  P1DIR = 0xCF;                             // Unused pins as outputs
-  P1REN |= 0x30;		                    // P1.4/1.5 pullup
-  P1IE |= 0x30;                             // P1.4 interrupt enabled
-  P1IES |= 0x30;                            // P1.4 Hi/lo edge
-  P1IFG &= ~0x30;                           // P1.4 IFG cleared
-  P2OUT = 0x00 + SENSOR_PWR;                // P2OUTs
-  P2SEL &= ~SENSOR_PWR;                     // P2.7 = GPIO
+  P1DIR = 0xEF;                             // Unused pins as outputs
+  P1REN |= 0x10;		                    // P1.4 pullup
+  P1IE |= 0x10;                             // P1.4 interrupt enabled
+  P1IES |= 0x10;                            // P1.4 Hi/lo edge
+  P1IFG &= ~0x10;                           // P1.4 IFG cleared
+
+  P2OUT = 0x40 + SENSOR_PWR;                // P2OUTs 2.6/2.7
+  P2SEL &= ~(0x40+SENSOR_PWR);              // P2.6/P2.7 = GPIO
   P2DIR = 0xff;                             // Unused pins as outputs
 
   SD16CTL = SD16VMIDON + SD16REFON + SD16SSEL_1;// 1.2V ref, SMCLK
@@ -110,6 +114,10 @@ void main(void)
   WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL+WDTIS1;// ACLK/512, int timer: 341msec
   BCSCTL1 |= DIVA_3;                        // ACLK = VLO/8
   IE1 |= WDTIE;                             // Enable WDT interrupt
+
+  //Initial Outputs
+  P1OUT |= SCLK;							//Pull SCLK High
+  P2OUT |= PIR;								//Pull PIR High
 
   _BIS_SR(LPM3_bits + GIE);                 // Enter LPM3 with interrupts
 }
@@ -130,9 +138,28 @@ __interrupt void SD16ISR(void)
     result_old = result_old - result_new;
 
   if (result_old > THRESHOLD)               // If motion detected...
-     if (LED_ENABLE & 0x01)
-        P1OUT |= LED_OUT;                   // Turn LED on
-
+     {if (motion==1)
+        {P1OUT |= LED_OUT;                   // Turn LED on
+         motion=1;
+        }
+     else{
+     P1OUT |= LED_OUT;                   // Turn LED on
+	 P1OUT &= ~SCLK;						//Pull SCLK LOW
+	 P2OUT &= ~PIR;						//Pull PIR LOW
+	 __delay_cycles(5000);				//wait 5ms
+	 P1OUT |= SCLK;						//Pull SCLK High
+	 motion=1;}
+     }
+  else {
+	 if (motion== 1)
+	  {
+	  P1OUT &= ~SCLK;						//Pull SCLK LOW
+	  P2OUT |= PIR;							//Pull PIR High
+	  __delay_cycles(5000);					//wait 5ms
+	  P1OUT |= SCLK;						//Pull SCLK High
+	  }
+	 motion=0;
+  }
   result_old = SD16MEM0;                    // Save last conversion
 
   __bis_SR_register_on_exit(SCG1+SCG0);     // Return to LPM3 after reti
@@ -161,10 +188,11 @@ __interrupt void Port_1(void)
 {
 
 	if ((P1IFG&0x10)==0x10) {
-		LED_ENABLE ^= 0x01;                      // Toggle LED enable for current measurement
+		//LED_ENABLE ^= 0x01;                      // Toggle LED enable for current measurement
+		P1OUT &= ~SCLK;						//Pull SCLK LOW
+		__delay_cycles(5000);					//wait 5ms
+		P1OUT |= SCLK;						//Pull SCLK High
 		P1IFG &= ~0x10;							// P1.4 IFG cleared
-	}
-	else{
-		P1IFG &= ~0x20;							// P1.5 IFG cleared
-	}
+		}
+
 }
