@@ -77,6 +77,9 @@
 
 static unsigned int result_old = 0;         // Storage for last conversion
 static unsigned int motion=0;				// Variable for Motion status (no-motion =0,motion =1)
+static unsigned int reed=0;					// Variable for Reed Status
+static unsigned int prevreed=0;				// Previous reed status
+static unsigned int test=0;
 char LED_ENABLE = 1;                        // LED control
 
 void main(void)
@@ -87,13 +90,13 @@ void main(void)
   BCSCTL1 |= DIVA_2;                        // ACLK = VLO/4
   BCSCTL3 |= LFXT1S_2;
 
-  P1OUT = 0x30;        		        	    // P1OUTs 1.4/1.5
+  P1OUT = 0x20;        		        	    // P1OUTs P1.5
   P1SEL = 0x08;                             // Select VREF function
   P1DIR = 0xEF;                             // Unused pins as outputs
   P1REN |= 0x10;		                    // P1.4 pullup
-  P1IE |= 0x10;                             // P1.4 interrupt enabled
-  P1IES |= 0x10;                            // P1.4 Hi/lo edge
-  P1IFG &= ~0x10;                           // P1.4 IFG cleared
+  //P1IE |= 0x10;                             // P1.4 interrupt enabled
+  //P1IES |= 0x10;                            // P1.4 Hi/lo edge
+  //P1IFG &= ~0x10;                           // P1.4 IFG cleared
 
   P2OUT = 0x40 + SENSOR_PWR;                // P2OUTs 2.6/2.7
   P2SEL &= ~(0x40+SENSOR_PWR);              // P2.6/P2.7 = GPIO
@@ -172,27 +175,45 @@ __interrupt void SD16ISR(void)
 #pragma vector=WDT_VECTOR
 __interrupt void watchdog_timer(void)
 {
+	test=P1IN;
+	if ((P1IN&0x10)==0x10)
+	{
+		reed=1;
+	}
+	else
+	{
+		reed=0;
+	}
+
+	if (prevreed!=reed)
+	{
+		P1OUT &= ~SCLK;						//Pull SCLK LOW
+		__delay_cycles(10000);				//wait 5ms
+		P1OUT |= SCLK;						//Pull SCLK High
+	}
   if (!(P1OUT & LED_OUT))                   // Has motion already been detected?
   {
     SD16CTL |= SD16REFON;                   // If no, turn on SD16_A ref
     SD16CCTL0 |= SD16SC;                    // Set bit to start new conversion
+    prevreed=reed;
     __bic_SR_register_on_exit(SCG1+SCG0);   // Keep DCO & SMCLK on after reti
   }
   else
     P1OUT &= ~LED_OUT;                      // If yes, turn off LED, measure on next loop
+
+  prevreed=reed;
 }
 
 // Port 1 interrupt service routine
-#pragma vector=PORT1_VECTOR
+/*#pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
 
 	if ((P1IFG&0x10)==0x10) {
-		//LED_ENABLE ^= 0x01;                      // Toggle LED enable for current measurement
 		P1OUT &= ~SCLK;						//Pull SCLK LOW
-		__delay_cycles(5000);					//wait 5ms
+		__delay_cycles(10000);					//wait 5ms
 		P1OUT |= SCLK;						//Pull SCLK High
 		P1IFG &= ~0x10;							// P1.4 IFG cleared
 		}
 
-}
+}*/
