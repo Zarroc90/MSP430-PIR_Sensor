@@ -126,14 +126,14 @@ EXE_OUTPUTS__QUOTED += \
 "PIR_Sensor.out" \
 
 BIN_OUTPUTS += \
-PIR_Sensor.hex \
+PIR_Sensor.txt \
 
 BIN_OUTPUTS__QUOTED += \
-"PIR_Sensor.hex" \
+"PIR_Sensor.txt" \
 
 
 # All Target
-all: PIR_Sensor.out
+all: PIR_Sensor.out secondary-outputs
 
 # Tool invocations
 PIR_Sensor.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
@@ -143,9 +143,9 @@ PIR_Sensor.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-PIR_Sensor.hex: $(EXE_OUTPUTS)
+PIR_Sensor.txt: $(EXE_OUTPUTS)
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "PIR_Sensor.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 --ti_txt -o "PIR_Sensor.txt" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 
@@ -156,6 +156,8 @@ clean:
 	-$(RM) "main.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
+
+secondary-outputs: $(BIN_OUTPUTS)
 
 .PHONY: all clean dependents
 .SECONDARY:

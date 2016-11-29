@@ -114,8 +114,8 @@ void main(void)
   P1SEL &= ~LED_OUT;                        // Turn LED off with ACLK (for low Icc)
 
   // Reconfig WDT+ for normal operation: interval of ~341msec
-  WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL+WDTIS1;// ACLK/512, int timer: 341msec
-  BCSCTL1 |= DIVA_3;                        // ACLK = VLO/8
+  WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL+/*WDTIS1*/0x01;// ACLK/8192, int timer: 341msec
+  BCSCTL1 |= DIVA_1;                        // ACLK = VLO/2
   IE1 |= WDTIE;                             // Enable WDT interrupt
 
   //Initial Outputs
