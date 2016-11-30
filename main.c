@@ -87,8 +87,9 @@ void main(void)
   WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL; // ACLK/32768, int timer: ~10s
   BCSCTL1 = CALBC1_1MHZ;                    // Set DCO to 1MHz
   DCOCTL = CALDCO_1MHZ;
+  BCSCTL3 |= LFXT1S_2;						// ACLK source VLO Clk
   BCSCTL1 |= DIVA_2;                        // ACLK = VLO/4
-  BCSCTL3 |= LFXT1S_2;
+
 
   P1OUT = 0x20;        		        	    // P1OUTs P1.5
   P1SEL = 0x08;                             // Select VREF function
@@ -114,8 +115,9 @@ void main(void)
   P1SEL &= ~LED_OUT;                        // Turn LED off with ACLK (for low Icc)
 
   // Reconfig WDT+ for normal operation: interval of ~341msec
-  WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL+/*WDTIS1*/0x01;// ACLK/8192, int timer: 341msec
-  BCSCTL1 |= DIVA_1;                        // ACLK = VLO/2
+  WDTCTL = WDTPW+WDTTMSEL+WDTCNTCL+WDTSSEL+0x01;// ACLK/8192, int timer: 341msec*2=682ms
+  BCSCTL1 &= ~DIVA_2;
+  BCSCTL1 |= DIVA_0;                        // ACLK = VLO(12khz)/1
   IE1 |= WDTIE;                             // Enable WDT interrupt
 
   //Initial Outputs
@@ -175,7 +177,7 @@ __interrupt void SD16ISR(void)
 #pragma vector=WDT_VECTOR
 __interrupt void watchdog_timer(void)
 {
-	test=P1IN;
+	/*test=P1IN;
 	if ((P1IN&0x10)==0x10)
 	{
 		reed=1;
@@ -190,7 +192,8 @@ __interrupt void watchdog_timer(void)
 		P1OUT &= ~SCLK;						//Pull SCLK LOW
 		__delay_cycles(10000);				//wait 5ms
 		P1OUT |= SCLK;						//Pull SCLK High
-	}
+	}*/
+
   if (!(P1OUT & LED_OUT))                   // Has motion already been detected?
   {
     SD16CTL |= SD16REFON;                   // If no, turn on SD16_A ref
@@ -202,6 +205,7 @@ __interrupt void watchdog_timer(void)
     P1OUT &= ~LED_OUT;                      // If yes, turn off LED, measure on next loop
 
   prevreed=reed;
+
 }
 
 // Port 1 interrupt service routine
