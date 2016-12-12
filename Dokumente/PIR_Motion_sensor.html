@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIR_Motion_sensor</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="pir-motion-sensor">PIR Motion Sensor</h1>
+
+
+
+<h2 id="device-specification">Device Specification</h2>
+
+<hr>
+
+<p><div class="toc">
+<ul>
+<li><a href="#pir-motion-sensor">PIR Motion Sensor</a><ul>
+<li><a href="#device-specification">Device Specification</a></li>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#operating-instructions">Operating instructions</a><ul>
+<li><a href="#buttons">Buttons</a></li>
+<li><a href="#z-wave-network-management">Z-Wave network management</a><ul>
+<li><a href="#learn-mode">Learn Mode</a></li>
+<li><a href="#reset">Reset</a></li>
+<li><a href="#wake-up-notification">Wake up notification</a></li>
+</ul>
+</li>
+<li><a href="#indicator-leds">Indicator LEDs</a></li>
+<li><a href="#wake-up-sources">Wake Up Sources</a></li>
+<li><a href="#light-sensor-management">Light Sensor management</a></li>
+<li><a href="#motion-sensor">Motion Sensor</a></li>
+<li><a href="#reed-sensor">Reed Sensor</a></li>
+<li><a href="#tamper-sensor">Tamper Sensor</a></li>
+</ul>
+</li>
+<li><a href="#z-wave-specification">Z-Wave Specification</a><ul>
+<li><a href="#main-definitions">Main definitions</a></li>
+<li><a href="#mandatory-command-classes">Mandatory Command Classes</a><ul>
+<li><a href="#z-wave-plus">Z-Wave plus</a></li>
+<li><a href="#basic">Basic</a></li>
+<li><a href="#version">Version</a></li>
+<li><a href="#manufacturer-specific">Manufacturer Specific</a></li>
+<li><a href="#battery">Battery</a></li>
+<li><a href="#notification">Notification</a></li>
+<li><a href="#sensor-binary">Sensor Binary</a></li>
+<li><a href="#association-groups">Association Groups</a></li>
+<li><a href="#association-group-information">Association Group Information</a></li>
+<li><a href="#device-reset-locally">Device Reset Locally</a></li>
+<li><a href="#power-level">Power Level</a></li>
+<li><a href="#wake-up">Wake Up</a></li>
+<li><a href="#sensor-multilevel">Sensor Multilevel</a></li>
+<li><a href="#configuration">Configuration</a></li>
+</ul>
+</li>
+<li><a href="#device-behaviour-charts-zm5101">Device Behaviour charts ZM5101</a><ul>
+<li><a href="#general-overview">General Overview</a></li>
+<li><a href="#measure-light">Measure Light</a></li>
+<li><a href="#msp430-motion-starts">MSP430 Motion Starts</a></li>
+<li><a href="#msp430-motion-stops">MSP430 Motion Stops</a></li>
+<li><a href="#msp430-reed-switch">MSP430 Reed switch</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</p>
+
+<hr>
+
+
+
+<h2 id="summary">Summary</h2>
+
+<p>This is a battery operated device. It has 1 Z-Wave chip - ZM5101, 1 TI MSP chip, which is connected to the REED and the PIR to detect open/close and motion start/stop. <br>
+LIGHT, TAMPER are connected to the ZM5101 chip</p>
+
+<hr>
+
+
+
+<h2 id="operating-instructions">Operating instructions</h2>
+
+
+
+<h3 id="buttons">Buttons</h3>
+
+<p>There is  Tamper button on the device. To push it, remove the case and use it as a regular button <br>
+Button events:</p>
+
+<ul>
+<li>Single Click: send out sensor reports and Wake Up notification</li>
+<li>Triple Click: Learn Mode</li>
+<li>Hold 5 seconds, followed by Triple click: Device Reset locally</li>
+</ul>
+
+<h3 id="z-wave-network-management">Z-Wave network management</h3>
+
+
+
+<h4 id="learn-mode">Learn Mode</h4>
+
+<p>To enter Learn Mode use triple click on the button.</p>
+
+<h4 id="reset">Reset</h4>
+
+<p>Hold Button for 5 seconds, the LED will start blinking. Afterwards triple click the button to reset the device</p>
+
+<h4 id="wake-up-notification">Wake up notification</h4>
+
+<p>To send wake up notification use single button click</p>
+
+
+
+<h3 id="indicator-leds">Indicator LEDs</h3>
+
+<p>ZM5101 has 1 indicator LED for Learn Mode activity, reset, etc.</p>
+
+
+
+<h3 id="wake-up-sources">Wake Up Sources</h3>
+
+<p>Following sources can wake up the device: <br>
+1. User opens the case and releases Tamper -&gt; INT1 goes LOW <br>
+2.  MSP430 drives INT1 pin LOW to report Motion change <br>
+3. Wake up Timer</p>
+
+
+
+<h3 id="light-sensor-management">Light Sensor management</h3>
+
+<p>ZM5101 wakes up every 60 seconds, when included to a Z-Wave network. Each Wake up it measures new Luminescence value to see if it must be reported to the controller. The value can be reported by Configuration Param interval (param <em>5</em>) or by hysteresis (param <em>6</em>).</p>
+
+<h4 id="adc-light-measurement">ADC light measurement</h4>
+
+<p>The light circuit consist of a photo-transistor, connected through resistor to ZM5101 ADC pin.  <br>
+Real life measurements:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Conditions</th>
+  <th>Voltage</th>
+  <th>ADC</th>
+  <th>Light Report</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Handy Photo</td>
+  <td>0.07</td>
+  <td>5/255</td>
+  <td>98 %</td>
+</tr>
+<tr>
+  <td>Room light</td>
+  <td>0.2</td>
+  <td>17/255</td>
+  <td>94 %</td>
+</tr>
+<tr>
+  <td>Dark</td>
+  <td>2.8</td>
+  <td>238/255</td>
+  <td>7 %</td>
+</tr>
+</tbody></table>
+
+
+<h3 id="motion-sensor">Motion Sensor</h3>
+
+<p>Motion sensor is measured by MSP430. Once motion is detected, MSP430 wakes up ZM5101 and ZM5101 reports to the controller about the change. See workflow diagrams for more details</p>
+
+
+
+<h3 id="reed-sensor">Reed Sensor</h3>
+
+<p>Reed sensor is also connected to the MSP430. If change is detected, MSP430 wakes up ZM5101 and ZM5101 reports to the controller about the change. See workflow diagrams for more details.</p>
+
+<h3 id="tamper-sensor">Tamper Sensor</h3>
+
+<p>Once the case is removed, the Tamper goes LOW, waking up the ZM5101. Once woken up, the ZM5101 <strong>doesn’t  go to sleep</strong> until the case is back on place. During this stage, the Tamper can be used as a button to perform network activity with the device.</p>
+
+<blockquote>
+  <p><strong>Warning</strong> <br>
+  This will kill the battery if the device is awaken for too long. The device uses slow LED blinking to indicate it’s not sleeping</p>
+</blockquote>
+
+<hr>
+
+
+
+<h2 id="z-wave-specification">Z-Wave Specification</h2>
+
+
+
+<h3 id="main-definitions">Main definitions</h3>
+
+<ul>
+<li>Network role: Sleeping Reporting Device</li>
+<li>Library type: Routing Slave</li>
+<li>Device Generic Type: GENERIC_TYPE_SENSOR_NOTIFICATION</li>
+<li>Device Specific Type: SPECIFIC_TYPE_ROUTING_SENSOR_NOTIFICATION</li>
+<li>Device Product Type: 0x0004</li>
+<li>Device Product ID: 0x0006</li>
+</ul>
+
+
+
+<h3 id="mandatory-command-classes">Mandatory Command Classes</h3>
+
+
+
+<h4 id="z-wave-plus">Z-Wave plus</h4>
+
+
+
+<h4 id="basic">Basic</h4>
+
+<p>Not mapped</p>
+
+
+
+<h4 id="version">Version</h4>
+
+
+
+<h4 id="manufacturer-specific">Manufacturer Specific</h4>
+
+
+
+<h4 id="battery">Battery</h4>
+
+<p>Battery is measured by ZM5101 on a Internal Voltage reference. <br>
+<strong>No</strong> Voltage regulator. 1xCR2477 Battery <br>
+0% - 2.4V, 100% - 3V</p>
+
+<h4 id="notification">Notification</h4>
+
+<p>The following events are supported: <br>
+1. Motion Unknown location notification <br>
+2. Window Open Notification <br>
+3. Window Close Notification <br>
+4. Tamper Removed Notification</p>
+
+
+
+<h4 id="sensor-binary">Sensor Binary</h4>
+
+<p>Following Binary Sensor types are supported: <br>
+1. Motion <br>
+2. Door/window <br>
+5. Tamper</p>
+
+
+
+<h4 id="association-groups">Association Groups</h4>
+
+<p>The Device has 3 association groups, max nodes 10:</p>
+
+<ol>
+<li><strong>Lifeline</strong>: All of the device status reports are sent to this group: <br>
+<ul><li>BATTERY_REPORT</li>
+<li>NOTIFICATION_REPORT (Tamper, Access, etc.)</li>
+<li>DEVICE_RESET_LOCALLY</li>
+<li>SENSOR_MULTILEVEL_REPORT</li>
+<li>SENSOR_BINARY_REPORT</li></ul></li>
+<li><strong>Motion Basic Control</strong>:  Once motion is detected, Basic Set On is sent to this group with value, set up by config parameter <em>1</em>. Once Motion is Idle, Basic Set Off is sent with value, set up by config parameter <em>2</em>. Commands are sent to this group, only if light level is below value, set in config param <em>7</em>.</li>
+<li><strong>Reed Basic Control</strong>:  Once motion is detected, Basic Set On is sent to this group with value, set up by config parameter <em>3</em>. Once Motion is Idle, Basic Set Off is sent with value, set up by config parameter <em>4</em>.</li>
+</ol>
+
+
+
+<h4 id="association-group-information">Association Group Information</h4>
+
+
+
+<h4 id="device-reset-locally">Device Reset Locally</h4>
+
+<p>The Device can be reset using Tamper actions</p>
+
+
+
+<h4 id="power-level">Power Level</h4>
+
+
+
+<h4 id="wake-up">Wake Up</h4>
+
+<p>Default Wake up interval is 1 week</p>
+
+<h4 id="sensor-multilevel">Sensor Multilevel</h4>
+
+<p>Following Multilevel Sensor types are supported:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Sensor Type</th>
+  <th>Value Size</th>
+  <th>Value Scale</th>
+  <th>Value Precision</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Luminescence</td>
+  <td>2</td>
+  <td>%</td>
+  <td>0</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="configuration">Configuration</h4>
+
+<p>Params:</p>
+
+<table>
+<thead>
+<tr>
+  <th>№</th>
+  <th>Size</th>
+  <th>Range</th>
+  <th>Default</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>1</td>
+  <td>1</td>
+  <td>0 - 255</td>
+  <td>255</td>
+  <td>Basic Set Value, sent to group 2, when motion detected</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>1</td>
+  <td>0 - 255</td>
+  <td>0</td>
+  <td>Basic Set Value, sent to group 2, when motion turns idle</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>1</td>
+  <td>0 - 255</td>
+  <td>255</td>
+  <td>Basic Set Value, sent to group 3, when door opens</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>1</td>
+  <td>0 - 255</td>
+  <td>0</td>
+  <td>Basic Set Value, sent to group 3, when door closes</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>2</td>
+  <td>0 - 65535</td>
+  <td>3600</td>
+  <td>Periodic interval to send Luminescence value(0 - disabled)</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>1</td>
+  <td>0 - 50</td>
+  <td>10</td>
+  <td>Hysteresis value to automatically report Luminescence on change</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>1</td>
+  <td>0 - 100</td>
+  <td>0</td>
+  <td>Basic Set is sent to association group, when light is below this level. 0 - turned off</td>
+</tr>
+</tbody></table>
+
+
+<h3 id="device-behaviour-charts-zm5101">Device Behaviour charts ZM5101</h3>
+
+
+
+<h4 id="general-overview">General Overview</h4>
+
+
+
+<div class="flow-chart"><svg height="364.7109375" version="1.1" width="1033.5625" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; top: -0.296875px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><marker id="raphael-marker-endblock33-obj209" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj210" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj212" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj214" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj216" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj218" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj220" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj222" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj224" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="0" y="0" width="69.578125" height="39" rx="20" ry="20" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="st" transform="matrix(1,0,0,1,85.7422,37.4277)"></rect><text x="10" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="stt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,85.7422,37.4277)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Boot up</tspan></text><path fill="#ffffff" stroke="#000000" d="M52.927734375,26.4638671875L0,52.927734375L105.85546875,105.85546875L211.7109375,52.927734375L105.85546875,0L0,52.927734375" stroke-width="2" font-family="sans-serif" font-weight="normal" id="wake_msp_cond" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,14.6758,130.4277)"></path><text x="57.927734375" y="52.927734375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="wake_msp_condt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,14.6758,130.4277)"><tspan dy="5.505859375" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake by MSP430?</tspan></text><rect x="0" y="0" width="213.6875" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="msp_event" transform="matrix(1,0,0,1,13.6875,323.7109)"></rect><rect x="10" y="0" width="193.6875" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="msp_eventi" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,13.6875,323.7109)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="msp_eventt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,13.6875,323.7109)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Handle Motion/Reed events</tspan><tspan dy="18" x="20" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></tspan></text><path fill="#ffffff" stroke="#000000" d="M52.27734375,26.138671875L0,52.27734375L104.5546875,104.5546875L209.109375,52.27734375L104.5546875,0L0,52.27734375" stroke-width="2" font-family="sans-serif" font-weight="normal" id="wake_int_cond" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,292.3633,131.0781)"></path><text x="57.27734375" y="52.27734375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="wake_int_condt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,292.3633,131.0781)"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake by Tamper?</tspan></text><rect x="0" y="0" width="233.0625" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="button_event" transform="matrix(1,0,0,1,280.3867,323.0605)"></rect><rect x="10" y="0" width="213.0625" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="button_eventi" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,280.3867,323.0605)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="button_eventt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,280.3867,323.0605)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Handle buttons/tamper events</tspan></text><path fill="#ffffff" stroke="#000000" d="M45.673828125,22.8369140625L0,45.673828125L91.34765625,91.34765625L182.6953125,45.673828125L91.34765625,0L0,45.673828125" stroke-width="2" font-family="sans-serif" font-weight="normal" id="wake_wut_cond" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,580.6563,137.6816)"></path><text x="50.673828125" y="45.673828125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="wake_wut_condt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,580.6563,137.6816)"><tspan dy="5.501953125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake on WUT?</tspan></text><rect x="0" y="0" width="185.109375" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="measure_event" transform="matrix(1,0,0,1,579.4492,316.457)"></rect><rect x="10" y="0" width="165.109375" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="measure_eventi" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,579.4492,316.457)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="measure_eventt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,579.4492,316.457)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Measure Luminescence</tspan></text><path fill="#ffffff" stroke="#000000" d="M36.33984375,18.169921875L0,36.33984375L72.6796875,72.6796875L145.359375,36.33984375L72.6796875,0L0,36.33984375" stroke-width="2" font-family="sans-serif" font-weight="normal" id="sleep_cond" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,861.2031,147.0156)"></path><text x="41.33984375" y="36.33984375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="sleep_condt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,861.2031,147.0156)"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Can sleep?</tspan></text><rect x="0" y="0" width="73.640625" height="39" rx="20" ry="20" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="e" transform="matrix(1,0,0,1,897.0625,307.123)"></rect><text x="10" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="et" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,897.0625,307.123)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep</tspan></text><path fill="none" stroke="#000000" d="M120.53125,76.427734375C120.53125,76.427734375,120.53125,116.08183431625366,120.53125,127.42817345960066" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj209)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><path fill="none" stroke="#000000" d="M120.53125,236.283203125C120.53125,236.283203125,120.53125,305.3281811103225,120.53125,320.70147698986693" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj210)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="125.53125" y="246.283203125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.501953125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M226.38671875,183.35546875C226.38671875,183.35546875,276.4500194787979,183.35546875,289.3569641979411,183.35546875" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj212)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="231.38671875" y="173.35546875" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#000000" d="M396.91796875,235.6328125C396.91796875,235.6328125,396.91796875,304.6777904853225,396.91796875,320.05108636486693" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj214)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="401.91796875" y="245.6328125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.5078125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M501.47265625,183.35546875C501.47265625,183.35546875,563.1850163936615,183.35546875,577.6488508023322,183.35546875" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj216)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="506.47265625" y="173.35546875" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#000000" d="M672.00390625,229.029296875C672.00390625,229.029296875,672.00390625,298.0742748603225,672.00390625,313.44757073986693" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj218)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="677.00390625" y="239.029296875" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.513671875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M763.3515625,183.35546875C763.3515625,183.35546875,841.7365313712507,183.35546875,858.1943129213669,183.35546875" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj220)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="768.3515625" y="173.35546875" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#000000" d="M933.8828125,219.6953125C933.8828125,219.6953125,933.8828125,288.7402904853225,933.8828125,304.11358636486693" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj222)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="938.8828125" y="229.6953125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.5078125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M1006.5625,183.35546875C1006.5625,183.35546875,1031.5625,183.35546875,1031.5625,183.35546875C1031.5625,183.35546875,1031.5625,105.427734375,1031.5625,105.427734375C1031.5625,105.427734375,120.53125,105.427734375,120.53125,105.427734375C120.53125,105.427734375,120.53125,120.80117893218994,120.53125,127.43698214925826" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj224)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="1011.5625" y="173.35546875" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text></svg></div>
+
+
+
+<h4 id="measure-light">Measure Light</h4>
+
+
+
+<div class="flow-chart"><svg height="758.759765625" version="1.1" width="527.296875" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; top: -0.796875px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><marker id="raphael-marker-endblock33-obj243" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj244" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj245" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj247" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj249" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj250" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj251" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock33-obj253" markerHeight="3" markerWidth="3" orient="auto" refX="1.5" refY="1.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 1.5 1.5) scale(0.6,0.6)" stroke-width="1.6667" fill="black" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="0" y="0" width="130.375" height="39" rx="20" ry="20" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="st" transform="matrix(1,0,0,1,48.8867,39.5371)"></rect><text x="10" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="stt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,48.8867,39.5371)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101 wakes up</tspan></text><rect x="0" y="0" width="174.15625" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="msr" transform="matrix(1,0,0,1,26.9961,168.0742)"></rect><rect x="10" y="0" width="154.15625" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="msri" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,26.9961,168.0742)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="msrt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,26.9961,168.0742)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Init ADC and measure</tspan></text><path fill="#ffffff" stroke="#000000" d="M55.037109375,27.5185546875L0,55.037109375L110.07421875,110.07421875L220.1484375,55.037109375L110.07421875,0L0,55.037109375" stroke-width="2" font-family="sans-serif" font-weight="normal" id="msr_hyst" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,4,261.0742)"></path><text x="60.037109375" y="55.037109375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="msr_hystt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,4,261.0742)"><tspan dy="5.505859375" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Delta &gt; Hysteresis?</tspan></text><rect x="0" y="0" width="177.125" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="wake_state" transform="matrix(1,0,0,1,25.5117,460.6855)"></rect><rect x="10" y="0" width="157.125" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="wake_statei" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,25.5117,460.6855)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="wake_statet" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,25.5117,460.6855)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake Up and init stuff</tspan><tspan dy="18" x="20" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></tspan></text><rect x="0" y="0" width="169.109375" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="send_fail" transform="matrix(1,0,0,1,29.5195,589.2227)"></rect><rect x="10" y="0" width="149.109375" height="39" rx="0" ry="0" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" stroke-width="2" id="send_faili" font-family="sans-serif" font-weight="normal" transform="matrix(1,0,0,1,29.5195,589.2227)"></rect><text x="20" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="send_failt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,29.5195,589.2227)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Send Z-Wave reports</tspan></text><rect x="0" y="0" width="137.234375" height="39" rx="20" ry="20" fill="#ffffff" stroke="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);" stroke-width="2" class="flowchart" id="e" transform="matrix(1,0,0,1,45.457,717.7598)"></rect><text x="10" y="19.5" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="et" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,45.457,717.7598)"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101 goes sleep</tspan></text><path fill="#ffffff" stroke="#000000" d="M41.478515625,20.7392578125L0,41.478515625L82.95703125,82.95703125L165.9140625,41.478515625L82.95703125,0L0,41.478515625" stroke-width="2" font-family="sans-serif" font-weight="normal" id="int_report" class="flowchart" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;" transform="matrix(1,0,0,1,305.2656,274.6328)"></path><text x="46.478515625" y="41.478515625" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" id="int_reportt" class="flowchartt" font-weight="normal" transform="matrix(1,0,0,1,305.2656,274.6328)"><tspan dy="5.509765625" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Report time?</tspan></text><path fill="none" stroke="#000000" d="M114.07421875,78.537109375C114.07421875,78.537109375,114.07421875,149.48124507954344,114.07421875,165.0695561474363" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj243)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><path fill="none" stroke="#000000" d="M114.07421875,207.07421875C114.07421875,207.07421875,114.07421875,246.72831869125366,114.07421875,258.07465783460066" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj244)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><path fill="none" stroke="#000000" d="M114.07421875,371.1484375C114.07421875,371.1484375,114.07421875,442.09257320454344,114.07421875,457.6808842724363" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj245)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="119.07421875" y="381.1484375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.5078125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M224.1484375,316.111328125C224.1484375,316.111328125,287.5777319204062,316.111328125,302.25814478919165,316.111328125" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj247)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="229.1484375" y="306.111328125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.501953125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text><path fill="none" stroke="#000000" d="M114.07421875,499.685546875C114.07421875,499.685546875,114.07421875,570.6296825795434,114.07421875,586.2179936474363" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj249)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><path fill="none" stroke="#000000" d="M114.07421875,628.22265625C114.07421875,628.22265625,114.07421875,699.1667919545434,114.07421875,714.7551030224363" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj250)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><path fill="none" stroke="#000000" d="M388.22265625,357.58984375C388.22265625,357.58984375,388.22265625,435.685546875,388.22265625,435.685546875C388.22265625,435.685546875,114.07421875,435.685546875,114.07421875,435.685546875C114.07421875,435.685546875,114.07421875,451.05899143218994,114.07421875,457.69479464925826" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj251)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="393.22265625" y="367.58984375" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.51171875" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">yes</tspan></text><path fill="none" stroke="#000000" d="M471.1796875,316.111328125C471.1796875,316.111328125,496.1796875,316.111328125,496.1796875,316.111328125C496.1796875,316.111328125,496.1796875,692.759765625,496.1796875,692.759765625C496.1796875,692.759765625,114.07421875,692.759765625,114.07421875,692.759765625C114.07421875,692.759765625,114.07421875,708.1332101821899,114.07421875,714.7690133992583" stroke-width="2" marker-end="url(#raphael-marker-endblock33-obj253)" font-family="sans-serif" font-weight="normal" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); font-family: sans-serif; font-weight: normal;"></path><text x="476.1796875" y="306.111328125" text-anchor="start" font-family="sans-serif" font-size="14px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: start; font-family: sans-serif; font-size: 14px; font-weight: normal;" font-weight="normal"><tspan dy="5.501953125" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">no</tspan></text></svg></div>
+
+
+
+<h4 id="msp430-motion-starts">MSP430 Motion Starts</h4>
+
+<p>Here it’s not described, how MSP430 detects motion. Refer to separate specification or other part for it. Here is described the communication between ZM5101 and MSP430 afterwards.</p>
+
+
+
+<div class="sequence-diagram"><svg height="696" version="1.1" width="503.296875" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; left: -0.5px; top: -0.09375px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><marker id="raphael-marker-endblock55-obj33" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj36" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj48" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="94.8828125" y="20" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="104.875" y="30" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="118.546875" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><rect x="94.8828125" y="637" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="104.875" y="647" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="118.546875" y="656.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><path fill="none" stroke="#000000" d="M118.546875,59L118.546875,637" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="263.34375" y="20" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="273.328125" y="30" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><rect x="263.34375" y="637" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="273.328125" y="647" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="656.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><path fill="none" stroke="#000000" d="M297.671875,59L297.671875,637" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="67.6796875" y="79" width="101.734375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="72.671875" y="84" width="91.734375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="118.546875" y="93.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Motion started</tspan></text><rect x="133.140625" y="123.5" width="149.90625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="208.109375" y="133" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK LOW (for 5ms)</tspan></text><path fill="none" stroke="#000000" d="M118.546875,147C118.546875,147,263.6853590682149,147,292.6705348416035,147" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj33)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="134.671875" y="162.5" width="146.859375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="208.109375" y="172" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull PIR LOW (constant)</tspan></text><path fill="none" stroke="#000000" d="M118.546875,186C118.546875,186,263.6853590682149,186,292.6705348416035,186" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj36)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="212.6484375" y="206" width="170.046875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="217.640625" y="211" width="160.046875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="220.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake Up quick boot(1ms)</tspan></text><rect x="204.6875" y="255" width="185.96875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="209.671875" y="260" width="175.96875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="269.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample INT1, SCKL, PIR pins</tspan></text><rect x="209.921875" y="304" width="175.5" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="214.90625" y="309" width="165.5" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="318.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Start normal Boot (~80ms)</tspan></text><rect x="128.53125" y="348.5" width="159.125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="208.109375" y="358" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK HIGH(constant)</tspan></text><path fill="none" stroke="#000000" d="M118.546875,372C118.546875,372,263.6853590682149,372,292.6705348416035,372" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj48)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="10" y="392" width="217.09375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="14.984375" y="397" width="207.09375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="118.546875" y="406.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wait for motion to stop / go sleep</tspan></text><rect x="233.1875" y="441" width="128.96875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="238.171875" y="446" width="118.96875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="455.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Finish normal Boot</tspan></text><rect x="166.375" y="490" width="262.59375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="171.359375" y="495" width="252.59375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="504.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample if pins has changed in meantime</tspan></text><rect x="228.1171875" y="539" width="139.109375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="233.109375" y="544" width="129.109375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="553.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Send Z-Wave reports</tspan></text><rect x="265.8515625" y="588" width="63.640625" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="270.84375" y="593" width="53.640625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="297.671875" y="602.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep</tspan></text></svg></div>
+
+
+
+<h4 id="msp430-motion-stops">MSP430 Motion Stops</h4>
+
+<p>Here it’s not described, how MSP430 detects motion. Refer to separate specification or other part for it. Here is described the communication between ZM5101 and MSP430 afterwards.</p>
+
+
+
+<div class="sequence-diagram"><svg height="696" version="1.1" width="504.4765625" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; left: -0.5px; top: -0.390625px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><marker id="raphael-marker-endblock55-obj97" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj100" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj112" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="96.0625" y="20" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="106.046875" y="30" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.7265625" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><rect x="96.0625" y="637" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="106.046875" y="647" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.7265625" y="656.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><path fill="none" stroke="#000000" d="M119.7265625,59L119.7265625,637" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="264.5234375" y="20" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="274.515625" y="30" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><rect x="264.5234375" y="637" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="274.515625" y="647" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="656.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><path fill="none" stroke="#000000" d="M298.8515625,59L298.8515625,637" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="74.21875" y="79" width="91.015625" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="79.203125" y="84" width="81.015625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.7265625" y="93.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Motion stops</tspan></text><rect x="134.328125" y="123.5" width="149.90625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="209.2890625" y="133" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK LOW (for 5ms)</tspan></text><path fill="none" stroke="#000000" d="M119.7265625,147C119.7265625,147,264.8650465682149,147,293.8502223416035,147" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj97)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="133.78125" y="162.5" width="150.984375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="209.2890625" y="172" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull PIR HIGH (constant)</tspan></text><path fill="none" stroke="#000000" d="M119.7265625,186C119.7265625,186,264.8650465682149,186,293.8502223416035,186" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj100)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="213.828125" y="206" width="170.046875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="218.8125" y="211" width="160.046875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="220.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake Up quick boot(1ms)</tspan></text><rect x="185.7421875" y="255" width="226.21875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="190.734375" y="260" width="216.21875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="269.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample INT1, SCKL, PIR, REED pins</tspan></text><rect x="211.1015625" y="304" width="175.5" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="216.09375" y="309" width="165.5" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="318.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Start normal Boot (~80ms)</tspan></text><rect x="129.71875" y="348.5" width="159.125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="209.2890625" y="358" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK HIGH(constant)</tspan></text><path fill="none" stroke="#000000" d="M119.7265625,372C119.7265625,372,264.8650465682149,372,293.8502223416035,372" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj112)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="10" y="392" width="219.453125" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="14.984375" y="397" width="209.453125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.7265625" y="406.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep / wait for motion to start</tspan></text><rect x="234.3671875" y="441" width="128.96875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="239.359375" y="446" width="118.96875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="455.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Finish normal Boot</tspan></text><rect x="167.5546875" y="490" width="262.59375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="172.546875" y="495" width="252.59375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="504.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample if pins has changed in meantime</tspan></text><rect x="229.296875" y="539" width="139.109375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="234.28125" y="544" width="129.109375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="553.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Send Z-Wave reports</tspan></text><rect x="267.03125" y="588" width="63.640625" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="272.015625" y="593" width="53.640625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.8515625" y="602.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep</tspan></text></svg></div>
+
+
+
+<h4 id="msp430-reed-switch">MSP430 Reed switch</h4>
+
+<p>Here it’s not described, how MSP430 detects motion. Refer to separate specification or other part for it. Here is described the communication between ZM5101 and MSP430 afterwards.</p>
+
+
+
+<div class="sequence-diagram"><svg height="657" version="1.1" width="504.09375" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="overflow: hidden; position: relative; left: -0.5px; top: -0.6875px;"><desc style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Created with Raphaël 2.1.2</desc><defs style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><marker id="raphael-marker-endblock55-obj160" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker><marker id="raphael-marker-endblock55-obj172" markerHeight="5" markerWidth="5" orient="auto" refX="2.5" refY="2.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#raphael-marker-block" transform="rotate(180 2.5 2.5) scale(1,1)" stroke-width="1.0000" fill="#000" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></use></marker></defs><rect x="95.6796875" y="20" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="105.671875" y="30" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.34375" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><rect x="95.6796875" y="598" width="47.328125" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="105.671875" y="608" width="27.328125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.34375" y="617.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">MSP</tspan></text><path fill="none" stroke="#000000" d="M119.34375,59L119.34375,598" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="264.140625" y="20" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="274.125" y="30" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="39.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><rect x="264.140625" y="598" width="68.65625" height="39" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="274.125" y="608" width="48.65625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="617.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">ZM5101</tspan></text><path fill="none" stroke="#000000" d="M298.46875,59L298.46875,598" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="31.0625" y="79" width="176.5625" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="36.046875" y="84" width="166.5625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.34375" y="93.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Reed switch changed state</tspan></text><rect x="133.9375" y="123.5" width="149.90625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="208.90625" y="133" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK LOW (for 5ms)</tspan></text><path fill="none" stroke="#000000" d="M119.34375,147C119.34375,147,264.4822340682149,147,293.4674098416035,147" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj160)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="213.4453125" y="167" width="170.046875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="218.4375" y="172" width="160.046875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="181.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Wake Up quick boot(1ms)</tspan></text><rect x="185.359375" y="216" width="226.21875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="190.34375" y="221" width="216.21875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="230.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample INT1, SCKL, PIR, REED pins</tspan></text><rect x="210.71875" y="265" width="175.5" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="215.703125" y="270" width="165.5" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="279.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Start normal Boot (~80ms)</tspan></text><rect x="129.328125" y="309.5" width="159.125" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="208.90625" y="319" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Pull SCLK HIGH(constant)</tspan></text><path fill="none" stroke="#000000" d="M119.34375,333C119.34375,333,264.4822340682149,333,293.4674098416035,333" stroke-width="2" marker-end="url(#raphael-marker-endblock55-obj172)" stroke-dasharray="0" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path><rect x="10" y="353" width="218.6875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="14.984375" y="358" width="208.6875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="119.34375" y="367.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep / wait for reed to change</tspan></text><rect x="233.984375" y="402" width="128.96875" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="238.96875" y="407" width="118.96875" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="416.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Finish normal Boot</tspan></text><rect x="167.171875" y="451" width="262.59375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="172.15625" y="456" width="252.59375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="465.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Sample if pins has changed in meantime</tspan></text><rect x="228.9140625" y="500" width="139.109375" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="233.90625" y="505" width="129.109375" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="514.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Send Z-Wave reports</tspan></text><rect x="266.6484375" y="549" width="63.640625" height="29" rx="0" ry="0" fill="none" stroke="#000000" stroke-width="2" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><rect x="271.640625" y="554" width="53.640625" height="19" rx="0" ry="0" fill="#ffffff" stroke="none" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></rect><text x="298.46875" y="563.5" text-anchor="middle" font-family="Andale Mono, monospace" font-size="16px" stroke="none" fill="#000000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-family: &quot;Andale Mono&quot;, monospace; font-size: 16px;"><tspan dy="5.5" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);">Go sleep</tspan></text></svg></div></div></body>
+</html>

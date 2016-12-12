@@ -1,0 +1,42 @@
+wenn bewegung erkannt dann sleep modus
+
+i2C Timeout/Abtastrate/Threshold
+
+Pins Used: 
+
+P1.0	LED
+P1.1	A4+
+P1.2	A4-
+P1.3	Vref
+P1.4	/Reed
+P1.5	SCLK
+P1.6	SDO
+P1.7	SDI
+
+P2.6	PIR
+P2.7	PIR_VCC
+
+Energy saving Pins Output LOW
+
+Abtastrate Formula 
+
+Time = 1/(12KHz/BCSCTL/WDTIS)
+
+
+BCSCTL		WDTISx			Time			Number			HEX_I2C
+0x00	/1	0x00  /32768	2,732	s		10	-not used	0x00
+0x00		0x01  /8192		0,683 	s		8				0x01
+0x00		0x10  /512		0,042 	s		4	-not used
+0x00		0x11  /64		0,005   s		1				0x03
+0x10	/2	0x00			5,464	s		11	-not used
+0x10		0x01			1,366	s		9				0x11
+0x10		0x10			0,084	s		5				0x12
+0x10		0x11			0,010	s		2				0x13
+0x20	/4	0x00			10,928	s		12				0x20
+0x20		0x01			2,732	s		10				0x21
+0x20		0x10			0,170	s		6				0x22
+0x20		0x11			0,021	s		3				0x23
+0x30	/8	0x00			21,856	s		13				0x30
+0x30		0x01			5,464	s		11				0x31
+0x30		0x10			0,341	s		7				0x32
+0x30		0x11			0,042	s		4				0x33

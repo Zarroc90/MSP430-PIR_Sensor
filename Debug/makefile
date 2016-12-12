@@ -139,7 +139,7 @@ all: PIR_Sensor.out secondary-outputs
 PIR_Sensor.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power="all" -g --define=__MSP430F2013__ --diag_warning=225 --diag_wrap=off --display_error_number --printf_support=minimal -z -m"PIR_Sensor.map" --stack_size=50 --heap_size=0 -i"C:/ti/ccsv6/ccs_base/msp430/include" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/lib" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="PIR_Sensor_linkInfo.xml" --use_hw_mpy=none --rom_model -o "PIR_Sensor.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power="all" -g --define=__MSP430F2013__ --display_error_number --diag_warning=225 --diag_wrap=off --printf_support=minimal -z -m"PIR_Sensor.map" --heap_size=0 --stack_size=50 -i"C:/ti/ccsv6/ccs_base/msp430/include" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/lib" -i"C:/ti/ccsv6/tools/compiler/msp430_15.12.3.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="PIR_Sensor_linkInfo.xml" --use_hw_mpy=none --rom_model -o "PIR_Sensor.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
