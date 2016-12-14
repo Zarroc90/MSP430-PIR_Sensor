@@ -43,3 +43,33 @@ BCSCTL		WDTISx			Time			Number			HEX_I2C
 
 Reed min. aller 600ms abfragen über watchdog
 -> Pir mit Counter -> Timeout -> Nur abfragen wenn watchdog Counter abgelaufen ist
+
+I2C Interface
+
+Slave Adress: 0x48 (right justified)
+
+If REED or PIR Change
+-> SCLK for 5ms High
+	-> I2C Read Slave Adress (0x91-> after left shift) 
+	
+	Address		1.Byte	
+	0x90	ACK		0b0000 00--
+	
+	1. Bit		0.Bit
+H	Reed 1		Motion	
+L	Reed 0		No Motion
+	
+Set Timeout (0,628ms *Multiplier)
+	
+	Address			1.Byte			2.Byte
+	0x90	ACK		0x01	ACK		Multiplier	
+
+Set Sample (0,628ms *Multiplier)
+
+	Address			1.Byte			2.Byte
+	0x90	ACK		0x02	ACK		Multiplier
+
+Set Threshold
+
+	Address			1.Byte			2.Byte
+	0x90	ACK		0x03	ACK		Threshold
