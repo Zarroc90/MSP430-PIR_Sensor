@@ -70,6 +70,7 @@
 #include  <msp430x20x3.h>
 
 #define   	LED_OUT         BIT0              	// Bit location for LED
+#define 	REED			BIT4				// Bit location for /Reed Sensor
 #define		SCLK			BIT5				// Bit Location for SCLK
 #define		PIR				BIT6				// Bit Location for PIR
 #define   	SENSOR_PWR      BIT7              	// Bit location for power to sensor
@@ -80,24 +81,33 @@
 #define		TIME_84ms		0x12
 #define		TIME_170ms		0x22
 #define		TIME_341ms		0x32
-#define		TIME_683ms		0x01
+#define		TIME_683ms		0x01				//last possible Abtastrate
 #define		TIME_1366ms		0x11
 #define		TIME_2732ms		0x21
 #define		TIME_5464ms		0x31
 #define		TIME_10928ms	0x20
 #define		TIME_21856ms	0x30
 
+#define		PIR_FLAG		0x01
+#define		REED_FLAG		0x02
+
+#define 	REG_Timeout		0x01
+#define 	REG_Sample		0x02
+#define		REG_Threshold	0x03
+
 static unsigned int result_old = 0;         // Storage for last conversion
-static unsigned int reed = 0;					// Variable for Reed Status
-static unsigned int prevreed = 0;				// Previous reed status
+static unsigned int timeout_multiplier = 0;	// Variable for timeout for during motion
+static unsigned int sample_multiplier = 0;// Variable for timeout for during motion
+static unsigned int timeout_counter = 0;// Variable for timeout for during motion
+static unsigned int sample_counter = 0;	// Variable for timeout for during motion
+static unsigned int prevreed = 0;			// Previous reed status
 static unsigned int i2c_object = 0;			//
 static unsigned int i2c_value = 0;			//
 static unsigned int THRESHOLD = 50;                	// Threshold for motion
 static unsigned int Interrupt_Package = 0;	//0x01= Motion 0x02=Reed
-static unsigned int Motion_Timeout = TIME_10928ms;	//
-int I2C_State, Bytecount, transmit = 0;     // State variables
-char SLV_Addr = 0x90;                  // Address is 0x48<<1 for R/W
-char LED_ENABLE = 1;                        // LED control
+static const int Motion_Timebase = TIME_683ms;	//
+int I2C_State, transmit = 0,test=0;     // State variables
+char SLV_Addr = 0x48;                  // Address is 0x48<<1 for R/W
 
 void main(void) {
 	WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL; // ACLK/32768, int timer: ~10s
@@ -123,6 +133,7 @@ void main(void) {
 	USICTL1 = USII2C + USIIE + USISTTIE;     // Enable I2C mode & USI interrupts
 	USICKCTL = USICKPL;                  // Setup clock polarity
 	USICNT |= USIIFGCC;                  // Disable automatic clear control
+	USICKCTL |= USISSEL_1;				// USE ACLK For this modul
 	USICTL0 &= ~USISWRST;                // Enable USI
 	USICTL1 &= ~USIIFG;                  // Clear pending flag
 
@@ -140,9 +151,9 @@ void main(void) {
 	P1SEL &= ~LED_OUT;                   // Turn LED off with ACLK (for low Icc)
 
 	// Reconfig WDT+ for normal operation: interval of ~341msec
-	WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + 0x01; // ACLK/8192, int timer: 341msec*2=682ms
-	BCSCTL1 &= ~DIVA_2;
-	BCSCTL1 |= DIVA_0;                        // ACLK = VLO(12khz)/1
+	WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + (Motion_Timebase & 0x03); // ACLK/8192, int timer: 341msec*2=682ms
+	BCSCTL1 &= ~0x30;						//Reset BCSCTL1 ACLK Divider
+	BCSCTL1 |= (Motion_Timebase & 0x30);           // SET ACLK Divider
 	IE1 |= WDTIE;                             // Enable WDT interrupt
 
 	//Initial Outputs
@@ -170,19 +181,18 @@ __interrupt void SD16ISR(void) {
 	if (result_old > THRESHOLD)               // If motion detected...
 			{
 
-			P1OUT |= LED_OUT;                   // Turn LED on
-			P1OUT &= ~SCLK;						//Pull SCLK LOW
-			_delay_cycles(5000);				//wait 5ms
-			P1OUT |= SCLK;						//Pull SCLK High
-			Interrupt_Package|= 1;
-			//Set timer and go for Timeout in Sleepmode
-			WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + (Motion_Timeout & 0x03); // WDTISx
-			BCSCTL1 &= ~0x30;						//Reset BCSCTL1 ACLK Divider
-			BCSCTL1 |= (Motion_Timeout & 0x30);           // SET ACLK Divider
-
-			}
-	else{
-		Interrupt_Package &= ~1;
+		P1OUT &= ~SCLK;						//Pull SCLK LOW
+		_delay_cycles(5000);				//wait 5ms
+		P1OUT |= SCLK;						//Pull SCLK High
+		Interrupt_Package |= PIR_FLAG;
+		sample_counter = sample_multiplier;
+		timeout_counter = timeout_multiplier;
+		/*WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + (Motion_Timeout & 0x03); // WDTISx
+		 BCSCTL1 &= ~0x30;						//Reset BCSCTL1 ACLK Divider
+		 BCSCTL1 |= (Motion_Timeout & 0x30);           // SET ACLK Divider
+		 */
+	} else {
+		Interrupt_Package &= ~PIR_FLAG;
 	}
 	result_old = SD16MEM0;                    // Save last conversion
 
@@ -195,33 +205,39 @@ __interrupt void SD16ISR(void) {
 
 #pragma vector=WDT_VECTOR
 __interrupt void watchdog_timer(void) {
-	/*test=P1IN;
-	 if ((P1IN&0x10)==0x10)
-	 {
-	 reed=1;
-	 }
-	 else
-	 {
-	 reed=0;
-	 }
 
-	 if (prevreed!=reed)
-	 {
-	 P1OUT &= ~SCLK;						//Pull SCLK LOW
-	 __delay_cycles(10000);				//wait 5ms
-	 P1OUT |= SCLK;						//Pull SCLK High
-	 }*/
+	if ((P1IN & 0x10) == 0x10) {
+		Interrupt_Package |= REED_FLAG;
+	} else {
+		Interrupt_Package &= ~REED_FLAG;
+	}
 
-	if (!(P1OUT & LED_OUT))                 // Has motion already been detected?
-	{
-		SD16CTL |= SD16REFON;                   // If no, turn on SD16_A ref
-		SD16CCTL0 |= SD16SC;                  // Set bit to start new conversion
-		prevreed = reed;
-		__bic_SR_register_on_exit(SCG1 + SCG0); // Keep DCO & SMCLK on after reti
-	} else
-		P1OUT &= ~LED_OUT;         // If yes, turn off LED, measure on next loop
+	if (prevreed != (Interrupt_Package & REED_FLAG)) {
+		P1OUT &= ~SCLK;					//Pull SCLK LOW
+		__delay_cycles(10000);				//wait 5ms
+		P1OUT |= SCLK;						//Pull SCLK High
+	}
 
-	prevreed = reed;
+	if ((Interrupt_Package & PIR_FLAG) == 1)                 //Motion
+			{
+		if (timeout_counter == 0) {
+			SD16CTL |= SD16REFON;                   // If no, turn on SD16_A ref
+			SD16CCTL0 |= SD16SC;              // Set bit to start new conversion
+			__bic_SR_register_on_exit(SCG1 + SCG0); // Keep DCO & SMCLK on after reti
+		} else {
+			timeout_counter--;
+		}
+	} else {													//NO Motion
+		if (sample_counter == 0) {
+			SD16CTL |= SD16REFON;                   // If no, turn on SD16_A ref
+			SD16CCTL0 |= SD16SC;              // Set bit to start new conversion
+			__bic_SR_register_on_exit(SCG1 + SCG0); // Keep DCO & SMCLK on after reti
+		} else {
+			sample_counter--;
+		}
+	}
+
+	prevreed = (Interrupt_Package & REED_FLAG);
 
 }
 
@@ -253,7 +269,6 @@ void __attribute__ ((interrupt(USI_VECTOR))) USI_TXRX (void)
 {
 	if (USICTL1 & USISTTIFG)             // Start entry?
 	{
-		P1OUT |= 0x01;                     // LED on: sequence start
 		I2C_State = 2;                     // Enter 1st state on start
 	}
 
@@ -270,18 +285,19 @@ void __attribute__ ((interrupt(USI_VECTOR))) USI_TXRX (void)
 	case 4: // Process Address and send (N)Ack
 
 		if (USISRL & 0x01) {            // If master read...
-			SLV_Addr = 0x91;             // Save R/W bit
+			SLV_Addr = 0x91;            // Save R/W bit
 			transmit = 1;
 		} else {
 			transmit = 0;
 			SLV_Addr = 0x90;
 		}
 		USICTL0 |= USIOE;             // SDA = output
+		test=USISRL;
 		if (USISRL == SLV_Addr)       // Address match?
 				{
 			USISRL = 0x00;              // Send Ack
 			if (transmit == 0) {
-				I2C_State = 6;
+				I2C_State = 8;
 			}           // Go to next state: RX data
 			if (transmit == 1) {
 				I2C_State = 18;
@@ -290,14 +306,14 @@ void __attribute__ ((interrupt(USI_VECTOR))) USI_TXRX (void)
 			USISRL = 0xFF;              // Send NAck
 			I2C_State = 6;              // next state: prep for next Start
 		}
-		USICNT |= 0x01;               // Bit counter = 1, send (N)Ack bit
+		USICNT |= 0x01;               	// Bit counter = 1, send (N)Ack bit
 		break;
 
 	case 6: // Prep for Start condition
 		USICTL0 &= ~USIOE;       // SDA = input
 		SLV_Addr = 0x90;         // Reset slave address
 		I2C_State = 0;           // Reset state machine
-		break;
+	break;
 
 	case 8: // Receive data byte I
 		USICTL0 &= ~USIOE;       // SDA = input
@@ -329,43 +345,38 @@ void __attribute__ ((interrupt(USI_VECTOR))) USI_TXRX (void)
 
 	case 16:           	// Apply I2C Commands
 		switch (i2c_object) {
-		case 1:           	//Timeout
-
+		case REG_Timeout:           	//Timeout
+			timeout_multiplier = i2c_value;
 			break;
-		case 2:           	//Abtastrate
-							// Reconfig WDT+ for normal operation: interval of ~341msec
-			WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + (i2c_value & 0x03); // WDTISx
-			BCSCTL1 &= ~0x30;						//Reset BCSCTL1 ACLK Divider
-			BCSCTL1 |= (i2c_value & 0x30);           // SET ACLK Divider
-			IE1 |= WDTIE;                            // Enable WDT interrupt
+		case REG_Sample:        //Abtastrate -> niemand im Raum
+			sample_multiplier = i2c_value;
 			break;
-		case 3:                            //Threshold
+		case REG_Threshold:                            //Threshold
 			THRESHOLD = i2c_value;
 			break;
 		}
 		I2C_State = 6;           	// Go to next state: prep for next Start
 		break;
 
-	case 18: // Send Data byte
+	case 18: 												// Send Data byte
 		USICTL0 |= USIOE;             // SDA = output
 		USISRL = Interrupt_Package;
 		USICNT |= 0x08;              // Bit counter = 8, TX data
 		I2C_State = 20;               // Go to next state: receive (N)Ack
 		break;
 
-	case 20:               // Receive Data (N)Ack
+	case 20:            								// Receive Data (N)Ack
 		USICTL0 &= ~USIOE;            // SDA = input
 		USICNT |= 0x01;               // Bit counter = 1, receive (N)Ack
 		I2C_State = 22;               // Go to next state: check (N)Ack
 		break;
 
-	case 22:               // Process Data Ack/NAck
+	case 22:          									// Process Data Ack/NAck
 		if (USISRL & 0x01)               // If Nack received...
 				{
 			USICTL0 &= ~USIOE;            // SDA = input
 			SLV_Addr = 0x90;              // Reset slave address
 			I2C_State = 0;                // Reset state machine
-			Bytecount = 0;
 			// LPM0_EXIT;                  // Exit active for next transfer
 		}
 		I2C_State = 6;						//Prepare for start condition

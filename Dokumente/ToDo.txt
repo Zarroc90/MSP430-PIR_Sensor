@@ -40,3 +40,6 @@ BCSCTL		WDTISx			Time			Number			HEX_I2C
 0x30		0x01			5,464	s		11				0x31
 0x30		0x10			0,341	s		7				0x32
 0x30		0x11			0,042	s		4				0x33
+
+Reed min. aller 600ms abfragen über watchdog
+-> Pir mit Counter -> Timeout -> Nur abfragen wenn watchdog Counter abgelaufen ist
